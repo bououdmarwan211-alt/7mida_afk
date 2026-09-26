@@ -1,0 +1,47 @@
+const mineflayer = require('mineflayer');
+
+const botOptions = {
+  host: 'UNDERWORLD-24BQ.aternos.me',
+  port: 13590,
+  username: 'AFK_Bot',
+  auth: 'offline'
+};
+
+function createBot() {
+  console.log('جاري الاتصال بالسيرفر...');
+  const bot = mineflayer.createBot(botOptions);
+
+  bot.on('spawn', () => {
+    console.log(`تم دخول البوت بنجاح باسم: ${bot.username}`);
+    
+    // حركة ضد الـ AFK كل 30 ثانية
+    setInterval(() => {
+      if (bot.entity) {
+        bot.setControlState('jump', true);
+        setTimeout(() => {
+          bot.setControlState('jump', false);
+        }, 500);
+        
+        const yaw = (Math.random() - 0.5) * Math.PI;
+        const pitch = (Math.random() - 0.5) * Math.PI;
+        bot.look(yaw, pitch, true);
+      }
+    }, 30000);
+  });
+
+  bot.on('chat', (username, message) => {
+    if (username === bot.username) return;
+    console.log(`[Chat] ${username}: ${message}`);
+  });
+
+  bot.on('end', (reason) => {
+    console.log(`انقطع الاتصال: ${reason}. جاري إعادة المحاولة خلال 10 ثوانٍ...`);
+    setTimeout(createBot, 10000);
+  });
+
+  bot.on('error', (err) => {
+    console.log(`حدث خطأ: ${err.message}`);
+  });
+}
+
+createBot();
